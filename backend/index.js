@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-
+import User from "./models/User.js";
 dotenv.config();
 
 const app = express();
@@ -21,6 +21,7 @@ mongoose
 app.get("/", (req, res) => {
   res.send("Cash Exchange API is running");
 });
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
