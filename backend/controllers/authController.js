@@ -79,3 +79,13 @@ export const loginUser = async (req, res) => {
   }
 };
 
+export const getMe = async (req, res) => {
+  res.status(200).json({
+    user: req.user        
+  })
+}
+  
+
+
+
+
