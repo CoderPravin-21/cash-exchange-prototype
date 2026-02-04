@@ -49,8 +49,40 @@ export const createExchangeRequest = async (req, res) => {
 
 
 export const getNearbyRequests = async (req, res) => {
-  res.status(501).json({ message: "Not implemented yet" });
+  try {
+    // 1️⃣ Extract latitude & longitude from query
+    const { lat, lng } = req.query;
+
+    if (!lat || !lng) {
+      return res.status(400).json({ message: "Latitude and longitude required" });
+    }
+
+    // 2️⃣ Convert to numbers (query params are strings)
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+
+    // 3️⃣ Find nearby exchange requests
+    const requests = await ExchangeRequest.find({
+      requester: { $ne: req.user._id }, // not my own request
+      status: "CREATED",
+      location: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [longitude, latitude],
+          },
+          $maxDistance: 5000, // meters (5 km)
+        },
+      },
+    }).populate("requester", "name email");
+
+    // 4️⃣ Send response
+    res.json(requests);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
+
 
 export const acceptExchangeRequest = async (req, res) => {
   res.status(501).json({ message: "Not implemented yet" });
