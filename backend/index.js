@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import User from "./models/User.js";
 import authRoutes from "./routes/authRoutes.js";
+import exchangeRoutes from "./routes/exchangeRoutes.js";
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth",authRoutes); 
+app.use("/api/exchange",exchangeRoutes);
 
 // database connection
 mongoose
