@@ -65,6 +65,7 @@ export const getNearbyRequests = async (req, res) => {
     const requests = await ExchangeRequest.find({
       requester: { $ne: req.user._id }, // not my own request
       status: "CREATED",
+      expiresAt: { $gt: new Date() },
       location: {
         $near: {
           $geometry: {
@@ -84,13 +85,116 @@ export const getNearbyRequests = async (req, res) => {
 };
 
 
+// Accept Exchange Request
 export const acceptExchangeRequest = async (req, res) => {
-  res.status(501).json({ message: "Not implemented yet" });
+  try {
+    const requestId = req.params.id;
+    const currentUserId = req.user._id;
+
+    // Find the request by ID
+    const exchangeRequest = await ExchangeRequest.findById(requestId);
+
+    if (!exchangeRequest) {
+      return res.status(404).json({ message: "Exchange request not found" });
+    }
+
+    //  Cannot accept your own request
+    if (exchangeRequest.requester.toString() === currentUserId.toString()) {
+      return res
+        .status(400)
+        .json({ message: "You cannot accept your own request" });
+    }
+
+    //  Only CREATED requests can be accepted
+    if (exchangeRequest.status !== "CREATED") {
+      return res
+        .status(400)
+        .json({ message: "This request is no longer available" });
+    }
+
+    // // Optional: Check if current user already has an active accepted request
+    // const activeAccepted = await ExchangeRequest.findOne({
+    //   helper: currentUserId,
+    //   status: "ACCEPTED",
+    // });
+    // if (activeAccepted) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "You already have an active accepted request" });
+    // }
+
+    // 5️⃣ Accept the request
+    exchangeRequest.helper = currentUserId;
+    exchangeRequest.status = "ACCEPTED";
+    exchangeRequest.acceptedAt = new Date(); // optional timestamp
+
+    await exchangeRequest.save();
+
+    res.json({
+      message: "Request accepted successfully",
+      exchangeRequest,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
+
+
+
+
+// Complete Exchange Request
 export const completeExchangeRequest = async (req, res) => {
-  res.status(501).json({ message: "Not implemented yet" });
+  try {
+    const requestId = req.params.id;
+    const currentUserId = req.user._id;
+
+    // 1️⃣ Find the request by ID
+    const exchangeRequest = await ExchangeRequest.findById(requestId);
+
+    if (!exchangeRequest) {
+      return res.status(404).json({ message: "Exchange request not found" });
+    }
+
+    // 2️⃣ Only helper can complete the request
+    if (
+      !exchangeRequest.helper ||
+      exchangeRequest.helper.toString() !== currentUserId.toString()
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Only the assigned helper can complete this request" });
+    }
+
+    // 3️⃣ Only ACCEPTED requests can be completed
+    if (exchangeRequest.status !== "ACCEPTED") {
+      return res
+        .status(400)
+        .json({ message: "This request cannot be completed" });
+    }
+
+    // 4️⃣ Complete the request
+    exchangeRequest.status = "COMPLETED";
+    exchangeRequest.completedAt = new Date(); // optional timestamp
+
+    await exchangeRequest.save();
+
+    res.json({
+      message: "Request completed successfully",
+      exchangeRequest,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
+
+
+
+
+
+  
 
 export const cancelExchangeRequest = async (req, res) => {
   res.status(501).json({ message: "Not implemented yet" });
