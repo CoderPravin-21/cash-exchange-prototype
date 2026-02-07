@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import User from "./models/User.js";
 import authRoutes from "./routes/authRoutes.js";
 import exchangeRoutes from "./routes/exchangeRoutes.js";
+import ExchangeRequest from "./models/ExchangeRequest.js";
 import { discoverHelpers } from "./controllers/exchangeController.js";
 
 
