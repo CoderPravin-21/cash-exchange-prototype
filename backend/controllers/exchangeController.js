@@ -1,3 +1,4 @@
+
 import ExchangeRequest from "../models/ExchangeRequest.js";
 
 export const createExchangeRequest = async (req, res) => {
@@ -85,40 +86,67 @@ export const getNearbyRequests = async (req, res) => {
 };
 
 
-// Accept Exchange Request with Race Condition & Wallet Check (ESM)
+// Accept Exchange Request with Race Condition & Amount Compatibility (ESM)
 export const acceptExchangeRequest = async (req, res) => {
   try {
     const requestId = req.params.id;
     const currentUserId = req.user._id;
 
-    // 1️⃣ Fetch the request first to get amount
-    const exchangeRequest = await ExchangeRequest.findById(requestId);
-    if (!exchangeRequest) {
+    // 1️⃣ Fetch the request to be accepted
+    const targetRequest = await ExchangeRequest.findById(requestId);
+    if (!targetRequest) {
       return res.status(404).json({ message: "Exchange request not found" });
     }
 
-    // 2️⃣ Prevent user from accepting their own request
-    if (exchangeRequest.requester.toString() === currentUserId.toString()) {
+    // 2️⃣ Prevent accepting own request
+    if (targetRequest.requester.toString() === currentUserId.toString()) {
       return res.status(400).json({ message: "You cannot accept your own request" });
     }
 
     // 3️⃣ Only CREATED requests can be accepted
-    if (exchangeRequest.status !== "CREATED") {
+    if (targetRequest.status !== "CREATED") {
       return res.status(400).json({ message: "This request is no longer available" });
     }
 
-    // 4️⃣ Check wallet balance of helper
-    if (req.user.wallet < exchangeRequest.amount) {
-      return res.status(400).json({ message: "Insufficient balance to accept this request" });
+    // 4️⃣ Fetch helper's own active request
+    const helperRequest = await ExchangeRequest.findOne({
+      requester: currentUserId,
+      status: "CREATED",
+    });
+
+    if (!helperRequest) {
+      return res.status(400).json({
+        message: "You must have an active exchange request to accept others",
+      });
     }
 
-    // 5️⃣ Atomic find-and-update to prevent race condition
+    // 5️⃣ Exchange type must be opposite
+    const isCompatibleType =
+      targetRequest.exchangeType === "ONLINE_TO_CASH" &&
+      helperRequest.exchangeType === "CASH_TO_ONLINE" ||
+      targetRequest.exchangeType === "CASH_TO_ONLINE" &&
+      helperRequest.exchangeType === "ONLINE_TO_CASH";
+
+    if (!isCompatibleType) {
+      return res.status(400).json({
+        message: "Exchange types are not compatible",
+      });
+    }
+
+    // 6️⃣ Amount compatibility check
+    if (helperRequest.amount < targetRequest.amount) {
+      return res.status(400).json({
+        message: "Your request amount is insufficient to fulfill this exchange",
+      });
+    }
+
+    // 7️⃣ Atomic accept to prevent race condition
     const updatedRequest = await ExchangeRequest.findOneAndUpdate(
       {
         _id: requestId,
         status: "CREATED",
         requester: { $ne: currentUserId },
-        helper: { $exists: false }, // Ensure no one else accepted
+        helper: { $exists: false },
       },
       {
         $set: {
@@ -130,19 +158,22 @@ export const acceptExchangeRequest = async (req, res) => {
       { new: true }
     );
 
-    // 6️⃣ If findOneAndUpdate fails, someone else already accepted
     if (!updatedRequest) {
       return res.status(400).json({
-        message:
-          "Cannot accept this request. It may have been accepted by someone else already.",
+        message: "Request already accepted by another user",
       });
     }
 
-    // 7️⃣ Success response
     res.json({
       message: "Request accepted successfully",
       exchangeRequest: updatedRequest,
     });
+
+  await ExchangeRequest.findByIdAndUpdate(helperRequest._id, {
+  status: "LOCKED",
+  linkedRequest: updatedRequest._id
+});
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -190,6 +221,12 @@ export const completeExchangeRequest = async (req, res) => {
       message: "Request completed successfully",
       exchangeRequest,
     });
+
+    await ExchangeRequest.updateOne(
+  { linkedRequest: exchangeRequest._id },
+  { status: "COMPLETED" }
+);
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -216,6 +253,12 @@ export const cancelExchangeRequest = async (req, res) => {
         .status(403)
         .json({ message: "Only the requester can cancel this request" });
     }
+    if (exchangeRequest.status !== "CREATED") {
+  return res.status(400).json({
+    message: "Only unaccepted requests can be cancelled"
+  });
+}
+
 
     // 3️⃣ Cancel the request
     exchangeRequest.status = "CANCELLED";
@@ -233,32 +276,70 @@ export const cancelExchangeRequest = async (req, res) => {
   }
 };
 
-// controllers/exchangeController.js
 
+
+// Discover compatible helpers near me
 export const discoverHelpers = async (req, res) => {
   try {
-    const { lat, lng, minAmount = 0, exchangeType = 'CASH', maxDistance = 5000 } = req.query; 
     const userId = req.user._id;
+    const { lat, lng, maxDistance = 5000 } = req.query;
 
-    if (!lat || !lng) {
-      return res.status(400).json({ message: "Latitude and longitude are required" });
+    if (lat == null || lng == null) {
+      return res.status(400).json({
+        message: "Latitude and longitude are required",
+      });
     }
 
-    // MongoDB geospatial query
+    const latitude = Number(lat);
+    const longitude = Number(lng);
+
+    // 1️⃣ Get current user's active request
+    const myRequest = await ExchangeRequest.findOne({
+      requester: userId,
+      status: "CREATED",
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!myRequest) {
+      return res.status(400).json({
+        message: "You must have an active exchange request to discover helpers",
+      });
+    }
+
+    // 2️⃣ Determine opposite exchange type
+    const oppositeType =
+      myRequest.exchangeType === "CASH_TO_ONLINE"
+        ? "ONLINE_TO_CASH"
+        : "CASH_TO_ONLINE";
+
+    // 3️⃣ Find compatible nearby requests
     const helpers = await ExchangeRequest.find({
-      status: 'CREATED',               // Only active requests
-      requester: { $ne: userId },      // Exclude your own requests
-      exchangeType,                     // Match exchange type
-      amount: { $gte: Number(minAmount) }, // Amount >= required
+      requester: { $ne: userId },
+      status: "CREATED",
+      exchangeType: oppositeType,
+      amount: { $gte: myRequest.amount },
+      expiresAt: { $gt: new Date() },
       location: {
         $near: {
-          $geometry: { type: 'Point', coordinates: [Number(lng), Number(lat)] },
-          $maxDistance: Number(maxDistance) // meters
-        }
-      }
-    }).populate('requester', 'name email wallet'); // Include contact info
+          $geometry: {
+            type: "Point",
+            coordinates: [longitude, latitude],
+          },
+          $maxDistance: Number(maxDistance),
+        },
+      },
+    }).populate("requester", "name email");
 
-    res.json({ count: helpers.length, helpers });
+    // 4️⃣ Response
+    res.json({
+      myRequest: {
+        id: myRequest._id,
+        amount: myRequest.amount,
+        exchangeType: myRequest.exchangeType,
+      },
+      count: helpers.length,
+      helpers,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });

@@ -60,7 +60,12 @@ const exchangeRequestSchema = new mongoose .Schema({
    } 
 );
 
-exchangeRequestSchema.index({ location: '2dsphere' });
+exchangeRequestSchema.index({ location: "2dsphere" });
+exchangeRequestSchema.index({ status: 1 });
+exchangeRequestSchema.index({ requester: 1 });
+exchangeRequestSchema.index({ helper: 1 });
+exchangeRequestSchema.index({ expiresAt: 1 });
+
 
 const ExchangeRequest = mongoose.model(
   "ExchangeRequest",
