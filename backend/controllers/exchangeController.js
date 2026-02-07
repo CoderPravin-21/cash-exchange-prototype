@@ -92,23 +92,33 @@ export const acceptExchangeRequest = async (req, res) => {
     const requestId = req.params.id;
     const currentUserId = req.user._id;
 
-    // 1️⃣ Fetch the request to be accepted
+    // 1️⃣ Prevent user from having another active accepted exchange
+    const busy = await ExchangeRequest.findOne({
+      status: "ACCEPTED",
+      $or: [{ requester: currentUserId }, { helper: currentUserId }],
+    });
+
+    if (busy) {
+      return res.status(400).json({
+        message: "You already have an active exchange in progress",
+      });
+    }
+
+    // 2️⃣ Fetch target request
     const targetRequest = await ExchangeRequest.findById(requestId);
     if (!targetRequest) {
       return res.status(404).json({ message: "Exchange request not found" });
     }
 
-    // 2️⃣ Prevent accepting own request
     if (targetRequest.requester.toString() === currentUserId.toString()) {
       return res.status(400).json({ message: "You cannot accept your own request" });
     }
 
-    // 3️⃣ Only CREATED requests can be accepted
     if (targetRequest.status !== "CREATED") {
       return res.status(400).json({ message: "This request is no longer available" });
     }
 
-    // 4️⃣ Fetch helper's own active request
+    // 3️⃣ Fetch helper’s own request
     const helperRequest = await ExchangeRequest.findOne({
       requester: currentUserId,
       status: "CREATED",
@@ -120,34 +130,26 @@ export const acceptExchangeRequest = async (req, res) => {
       });
     }
 
-    // 5️⃣ Exchange type must be opposite
-    const isCompatibleType =
-      targetRequest.exchangeType === "ONLINE_TO_CASH" &&
-      helperRequest.exchangeType === "CASH_TO_ONLINE" ||
-      targetRequest.exchangeType === "CASH_TO_ONLINE" &&
-      helperRequest.exchangeType === "ONLINE_TO_CASH";
+    // 4️⃣ Compatibility checks
+    const compatible =
+      (targetRequest.exchangeType === "ONLINE_TO_CASH" &&
+        helperRequest.exchangeType === "CASH_TO_ONLINE") ||
+      (targetRequest.exchangeType === "CASH_TO_ONLINE" &&
+        helperRequest.exchangeType === "ONLINE_TO_CASH");
 
-    if (!isCompatibleType) {
-      return res.status(400).json({
-        message: "Exchange types are not compatible",
-      });
+    if (!compatible) {
+      return res.status(400).json({ message: "Exchange types are not compatible" });
     }
 
-    // 6️⃣ Amount compatibility check
     if (helperRequest.amount < targetRequest.amount) {
       return res.status(400).json({
-        message: "Your request amount is insufficient to fulfill this exchange",
+        message: "Your request amount is insufficient",
       });
     }
 
-    // 7️⃣ Atomic accept to prevent race condition
+    // 5️⃣ Atomic accept
     const updatedRequest = await ExchangeRequest.findOneAndUpdate(
-      {
-        _id: requestId,
-        status: "CREATED",
-        requester: { $ne: currentUserId },
-        helper: { $exists: false },
-      },
+      { _id: requestId, status: "CREATED", helper: null },
       {
         $set: {
           status: "ACCEPTED",
@@ -164,16 +166,16 @@ export const acceptExchangeRequest = async (req, res) => {
       });
     }
 
+    // 6️⃣ Lock helper request (also ACCEPTED)
+    await ExchangeRequest.findByIdAndUpdate(helperRequest._id, {
+      status: "ACCEPTED",
+      linkedRequest: updatedRequest._id,
+    });
+
     res.json({
       message: "Request accepted successfully",
       exchangeRequest: updatedRequest,
     });
-
-  await ExchangeRequest.findByIdAndUpdate(helperRequest._id, {
-  status: "LOCKED",
-  linkedRequest: updatedRequest._id
-});
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });

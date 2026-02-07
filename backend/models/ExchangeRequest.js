@@ -49,6 +49,12 @@ const exchangeRequestSchema = new mongoose .Schema({
         default: "CREATED"
 
     },
+    linkedRequest: {
+    type: mongoose.Schema.Types.ObjectId,
+  ref: "ExchangeRequest",
+  default: null,
+},
+
 
     expiresAt:{
         type: Date,
