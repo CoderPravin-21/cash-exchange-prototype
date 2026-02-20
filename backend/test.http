@@ -1,0 +1,46 @@
+### Health Check
+GET http://localhost:5000/health
+
+### API Info
+GET http://localhost:5000/api
+
+### Register User 1 (Alice)
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Alice Smith",
+  "email": "alice@test.com",
+  "password": "Test1234",
+  "phone": "1111111111",
+  "location": {
+    "coordinates": [77.5946, 12.9716]
+  }
+}
+
+### Register User 2 (Bob)
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Bob Johnson",
+  "email": "bob@test.com",
+  "password": "Test1234",
+  "phone": "2222222222",
+  "location": {
+    "coordinates": [77.5950, 12.9720]
+  }
+}
+
+### Login Alice
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "alice@test.com",
+  "password": "Test1234"
+}
+
+### Get Profile (Replace TOKEN with accessToken from login)
+GET http://localhost:5000/api/auth/me
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE

@@ -1,349 +1,389 @@
+import mongoose from 'mongoose';
+import ExchangeRequest from '../models/ExchangeRequest.js';
+import Transaction from '../models/Transaction.js';
+import User from '../models/User.js';
+import { asyncHandler, AppError } from '../middleware/errorHandler.js';
+import logger from '../utils/logger.js';
+import config from '../config/config.js';
 
-import ExchangeRequest from "../models/ExchangeRequest.js";
+// @desc    Create new exchange request
+// @route   POST /api/exchange
+// @access  Private
+export const createExchangeRequest = asyncHandler(async (req, res) => {
+  const { 
+    amount, 
+    exchangeType, 
+    latitude, 
+    longitude, 
+    expiresInMinutes,
+    notes,
+    meetingPoint
+  } = req.body;
 
-export const createExchangeRequest = async (req, res) => {
-  try {
-    const { amount, exchangeType, latitude, longitude, expiresInMinutes } =
-      req.body;
-
-    // 1️⃣ Validation
-    if (!amount || !exchangeType || !latitude || !longitude) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
-
-    // 2️⃣ One active request rule
-    const existingRequest = await ExchangeRequest.findOne({
-      requester: req.user._id,
-      status: { $in: ["CREATED", "ACCEPTED"] },
-    });
-
-    if (existingRequest) {
-      return res
-        .status(400)
-        .json({ message: "You already have an active request" });
-    }
-
-    // 3️⃣ Expiry time
-    const expiresAt = new Date();
-    expiresAt.setMinutes(
-      expiresAt.getMinutes() + (expiresInMinutes || 30)
-    );
-
-    // 4️⃣ Create request
-    const request = await ExchangeRequest.create({
-      requester: req.user._id,
-      amount,
-      exchangeType,
-      location: {
-        type: "Point",
-        coordinates: [longitude, latitude],
-      },
-      expiresAt,
-    });
-
-    res.status(201).json(request);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-
-export const getNearbyRequests = async (req, res) => {
-  try {
-    // 1️⃣ Extract latitude & longitude from query
-    const { lat, lng } = req.query;
-
-    if (!lat || !lng) {
-      return res.status(400).json({ message: "Latitude and longitude required" });
-    }
-
-    // 2️⃣ Convert to numbers (query params are strings)
-    const latitude = parseFloat(lat);
-    const longitude = parseFloat(lng);
-
-    // 3️⃣ Find nearby exchange requests
-    const requests = await ExchangeRequest.find({
-      requester: { $ne: req.user._id }, // not my own request
-      status: "CREATED",
-      expiresAt: { $gt: new Date() },
-      location: {
-        $near: {
-          $geometry: {
-            type: "Point",
-            coordinates: [longitude, latitude],
-          },
-          $maxDistance: 5000, // meters (5 km)
-        },
-      },
-    }).populate("requester", "name email");
-
-    // 4️⃣ Send response
-    res.json(requests);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-
-// Accept Exchange Request with Race Condition & Amount Compatibility (ESM)
-export const acceptExchangeRequest = async (req, res) => {
-  try {
-    const requestId = req.params.id;
-    const currentUserId = req.user._id;
-
-    // 1️⃣ Prevent user from having another active accepted exchange
-    const busy = await ExchangeRequest.findOne({
-      status: "ACCEPTED",
-      $or: [{ requester: currentUserId }, { helper: currentUserId }],
-    });
-
-    if (busy) {
-      return res.status(400).json({
-        message: "You already have an active exchange in progress",
-      });
-    }
-
-    // 2️⃣ Fetch target request
-    const targetRequest = await ExchangeRequest.findById(requestId);
-    if (!targetRequest) {
-      return res.status(404).json({ message: "Exchange request not found" });
-    }
-
-    if (targetRequest.requester.toString() === currentUserId.toString()) {
-      return res.status(400).json({ message: "You cannot accept your own request" });
-    }
-
-    if (targetRequest.status !== "CREATED") {
-      return res.status(400).json({ message: "This request is no longer available" });
-    }
-
-    // 3️⃣ Fetch helper’s own request
-    const helperRequest = await ExchangeRequest.findOne({
-      requester: currentUserId,
-      status: "CREATED",
-    });
-
-    if (!helperRequest) {
-      return res.status(400).json({
-        message: "You must have an active exchange request to accept others",
-      });
-    }
-
-    // 4️⃣ Compatibility checks
-    const compatible =
-      (targetRequest.exchangeType === "ONLINE_TO_CASH" &&
-        helperRequest.exchangeType === "CASH_TO_ONLINE") ||
-      (targetRequest.exchangeType === "CASH_TO_ONLINE" &&
-        helperRequest.exchangeType === "ONLINE_TO_CASH");
-
-    if (!compatible) {
-      return res.status(400).json({ message: "Exchange types are not compatible" });
-    }
-
-    if (helperRequest.amount < targetRequest.amount) {
-      return res.status(400).json({
-        message: "Your request amount is insufficient",
-      });
-    }
-
-    // 5️⃣ Atomic accept
-    const updatedRequest = await ExchangeRequest.findOneAndUpdate(
-      { _id: requestId, status: "CREATED", helper: null },
-      {
-        $set: {
-          status: "ACCEPTED",
-          helper: currentUserId,
-          acceptedAt: new Date(),
-        },
-      },
-      { new: true }
-    );
-
-    if (!updatedRequest) {
-      return res.status(400).json({
-        message: "Request already accepted by another user",
-      });
-    }
-
-    // 6️⃣ Lock helper request (also ACCEPTED)
-    await ExchangeRequest.findByIdAndUpdate(helperRequest._id, {
-      status: "ACCEPTED",
-      linkedRequest: updatedRequest._id,
-    });
-
-    res.json({
-      message: "Request accepted successfully",
-      exchangeRequest: updatedRequest,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-
-// Complete Exchange Request
-export const completeExchangeRequest = async (req, res) => {
-  try {
-    const requestId = req.params.id;
-    const currentUserId = req.user._id;
-
-    // 1️⃣ Find the request by ID
-    const exchangeRequest = await ExchangeRequest.findById(requestId);
-
-    if (!exchangeRequest) {
-      return res.status(404).json({ message: "Exchange request not found" });
-    }
-
-    // 2️⃣ Only helper can complete the request
-    if (
-      !exchangeRequest.helper ||
-      exchangeRequest.helper.toString() !== currentUserId.toString()
-    ) {
-      return res
-        .status(403)
-        .json({ message: "Only the assigned helper can complete this request" });
-    }
-
-    // 3️⃣ Only ACCEPTED requests can be completed
-    if (exchangeRequest.status !== "ACCEPTED") {
-      return res
-        .status(400)
-        .json({ message: "This request cannot be completed" });
-    }
-
-    // 4️⃣ Complete the request
-    exchangeRequest.status = "COMPLETED";
-    exchangeRequest.completedAt = new Date(); // optional timestamp
-
-    await exchangeRequest.save();
-
-    res.json({
-      message: "Request completed successfully",
-      exchangeRequest,
-    });
-
-    await ExchangeRequest.updateOne(
-  { linkedRequest: exchangeRequest._id },
-  { status: "COMPLETED" }
-);
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-
-
-export const cancelExchangeRequest = async (req, res) => {
-  try {
-    const requestId = req.params.id;
-    const currentUserId = req.user._id;
-
-    // 1️⃣ Find the request by ID
-    const exchangeRequest = await ExchangeRequest.findById(requestId);
-
-    if (!exchangeRequest) {
-      return res.status(404).json({ message: "Exchange request not found" });
-    }
-
-    // 2️⃣ Only requester can cancel the request
-    if (exchangeRequest.requester.toString() !== currentUserId.toString()) {
-      return res
-        .status(403)
-        .json({ message: "Only the requester can cancel this request" });
-    }
-    if (exchangeRequest.status !== "CREATED") {
-  return res.status(400).json({
-    message: "Only unaccepted requests can be cancelled"
+  const existingRequest = await ExchangeRequest.findOne({
+    requester: req.user._id,
+    status: { $in: ['CREATED', 'ACCEPTED'] }
   });
-}
 
-
-    // 3️⃣ Cancel the request
-    exchangeRequest.status = "CANCELLED";
-    exchangeRequest.cancelledAt = new Date(); // optional timestamp
-
-    await exchangeRequest.save();
-
-    res.json({
-      message: "Request cancelled successfully",
-      exchangeRequest,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+  if (existingRequest) {
+    throw new AppError(
+      'You already have an active exchange request',
+      400
+    );
   }
-};
 
+  if (exchangeType === 'ONLINE_TO_CASH' && req.user.wallet.balance < amount) {
+    throw new AppError('Insufficient wallet balance', 400);
+  }
 
+  const expiresAt = new Date();
+  expiresAt.setMinutes(
+    expiresAt.getMinutes() + (expiresInMinutes || config.exchange.defaultExpiryMinutes)
+  );
 
-// Discover compatible helpers near me
-export const discoverHelpers = async (req, res) => {
-  try {
-    const userId = req.user._id;
-    const { lat, lng, maxDistance = 5000 } = req.query;
-
-    if (lat == null || lng == null) {
-      return res.status(400).json({
-        message: "Latitude and longitude are required",
-      });
+  const exchangeRequest = await ExchangeRequest.create({
+    requester: req.user._id,
+    amount,
+    exchangeType,
+    location: {
+      type: 'Point',
+      coordinates: [longitude, latitude]
+    },
+    timeline: { expiresAt },
+    notes: { requesterNotes: notes || '' },
+    metadata: {
+      platformFee: (amount * config.exchange.platformFeePercent) / 100
     }
+  });
 
-    const latitude = Number(lat);
-    const longitude = Number(lng);
+  logger.info('Exchange request created', {
+    userId: req.user._id,
+    requestId: exchangeRequest._id
+  });
 
-    // 1️⃣ Get current user's active request
-    const myRequest = await ExchangeRequest.findOne({
-      requester: userId,
-      status: "CREATED",
-      expiresAt: { $gt: new Date() },
-    });
+  res.status(201).json({
+    success: true,
+    message: 'Exchange request created successfully',
+    data: { exchangeRequest }
+  });
+});
 
-    if (!myRequest) {
-      return res.status(400).json({
-        message: "You must have an active exchange request to discover helpers",
-      });
+export const getNearbyRequests = asyncHandler(async (req, res) => {
+  const { lat, lng, maxDistance, minAmount, maxAmount, exchangeType, page, limit } = req.query;
+
+  const options = {
+    coordinates: [parseFloat(lng), parseFloat(lat)],
+    maxDistance: parseInt(maxDistance) || config.exchange.defaultMaxDistance,
+    excludeUserId: req.user._id,
+    minAmount: minAmount ? parseFloat(minAmount) : undefined,
+    maxAmount: maxAmount ? parseFloat(maxAmount) : undefined,
+    exchangeType,
+    page: parseInt(page) || 1,
+    limit: parseInt(limit) || config.exchange.defaultSearchLimit
+  };
+
+  const result = await ExchangeRequest.findNearby(options);
+
+  res.status(200).json({
+    success: true,
+    data: {
+      requests: result.requests,
+      pagination: result.pagination
     }
+  });
+});
 
-    // 2️⃣ Determine opposite exchange type
-    const oppositeType =
-      myRequest.exchangeType === "CASH_TO_ONLINE"
-        ? "ONLINE_TO_CASH"
-        : "CASH_TO_ONLINE";
+export const discoverHelpers = asyncHandler(async (req, res) => {
+  const myRequest = await ExchangeRequest.findOne({
+    requester: req.user._id,
+    status: 'CREATED',
+    'timeline.expiresAt': { $gt: new Date() }
+  });
 
-    // 3️⃣ Find compatible nearby requests
-    const helpers = await ExchangeRequest.find({
-      requester: { $ne: userId },
-      status: "CREATED",
-      exchangeType: oppositeType,
-      amount: { $gte: myRequest.amount },
-      expiresAt: { $gt: new Date() },
-      location: {
-        $near: {
-          $geometry: {
-            type: "Point",
-            coordinates: [longitude, latitude],
-          },
-          $maxDistance: Number(maxDistance),
-        },
-      },
-    }).populate("requester", "name email");
+  if (!myRequest) {
+    throw new AppError('You must have an active exchange request', 400);
+  }
 
-    // 4️⃣ Response
-    res.json({
+  const options = {
+    maxDistance: parseInt(req.query.maxDistance) || config.exchange.defaultMaxDistance,
+    page: parseInt(req.query.page) || 1,
+    limit: parseInt(req.query.limit) || config.exchange.defaultSearchLimit
+  };
+
+  const result = await ExchangeRequest.findCompatibleHelpers(myRequest._id, options);
+
+  res.status(200).json({
+    success: true,
+    data: {
       myRequest: {
-        id: myRequest._id,
+        _id: myRequest._id,
         amount: myRequest.amount,
-        exchangeType: myRequest.exchangeType,
+        exchangeType: myRequest.exchangeType
       },
-      count: helpers.length,
-      helpers,
+      helpers: result.requests,
+      pagination: result.pagination
+    }
+  });
+});
+
+export const acceptExchangeRequest = asyncHandler(async (req, res) => {
+  const requestId = req.params.id;
+
+  const busyCheck = await ExchangeRequest.findOne({
+    status: 'ACCEPTED',
+    $or: [
+      { requester: req.user._id },
+      { helper: req.user._id }
+    ]
+  });
+
+  if (busyCheck) {
+    throw new AppError('You already have an active exchange in progress', 400);
+  }
+
+  const targetRequest = await ExchangeRequest.findById(requestId);
+
+  if (!targetRequest) {
+    throw new AppError('Exchange request not found', 404);
+  }
+
+  if (targetRequest.requester.toString() === req.user._id.toString()) {
+    throw new AppError('Cannot accept your own request', 400);
+  }
+
+  if (targetRequest.status !== 'CREATED') {
+    throw new AppError('Request is no longer available', 400);
+  }
+
+  if (targetRequest.isExpired) {
+    throw new AppError('Request has expired', 400);
+  }
+
+  const helperRequest = await ExchangeRequest.findOne({
+    requester: req.user._id,
+    status: 'CREATED'
+  });
+
+  if (!helperRequest) {
+    throw new AppError('You must have an active request to accept others', 400);
+  }
+
+  const compatible =
+    (targetRequest.exchangeType === 'ONLINE_TO_CASH' &&
+      helperRequest.exchangeType === 'CASH_TO_ONLINE') ||
+    (targetRequest.exchangeType === 'CASH_TO_ONLINE' &&
+      helperRequest.exchangeType === 'ONLINE_TO_CASH');
+
+  if (!compatible) {
+    throw new AppError('Exchange types are not compatible', 400);
+  }
+
+  if (helperRequest.amount < targetRequest.amount) {
+    throw new AppError('Your request amount is insufficient', 400);
+  }
+
+  const updatedRequest = await ExchangeRequest.findOneAndUpdate(
+    { _id: requestId, status: 'CREATED', helper: null },
+    {
+      $set: {
+        status: 'ACCEPTED',
+        helper: req.user._id,
+        'timeline.acceptedAt': new Date()
+      }
+    },
+    { new: true }
+  );
+
+  if (!updatedRequest) {
+    throw new AppError('Request already accepted by another user', 400);
+  }
+
+  const completionCode = updatedRequest.generateCompletionCode();
+  await updatedRequest.save();
+
+  await ExchangeRequest.findByIdAndUpdate(helperRequest._id, {
+    status: 'ACCEPTED',
+    linkedRequest: updatedRequest._id,
+    'timeline.acceptedAt': new Date()
+  });
+
+  logger.info('Exchange request accepted', {
+    requestId: updatedRequest._id,
+    helperId: req.user._id
+  });
+
+  res.status(200).json({
+    success: true,
+    message: 'Request accepted successfully',
+    data: {
+      exchangeRequest: updatedRequest,
+      completionCode
+    }
+  });
+});
+
+export const completeExchangeRequest = asyncHandler(async (req, res) => {
+  const { code } = req.body;
+  const requestId = req.params.id;
+
+  const exchangeRequest = await ExchangeRequest.findById(requestId)
+    .populate('requester')
+    .populate('helper');
+
+  if (!exchangeRequest) {
+    throw new AppError('Exchange request not found', 404);
+  }
+
+  if (!exchangeRequest.helper || 
+      exchangeRequest.helper._id.toString() !== req.user._id.toString()) {
+    throw new AppError('Only the helper can complete this request', 403);
+  }
+
+  if (exchangeRequest.status !== 'ACCEPTED') {
+    throw new AppError('This request cannot be completed', 400);
+  }
+
+  if (!exchangeRequest.verifyCompletionCode(code)) {
+    throw new AppError('Invalid completion code', 400);
+  }
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const payer = exchangeRequest.exchangeType === 'CASH_TO_ONLINE'
+      ? exchangeRequest.requester
+      : exchangeRequest.helper;
+
+    const payee = exchangeRequest.exchangeType === 'CASH_TO_ONLINE'
+      ? exchangeRequest.helper
+      : exchangeRequest.requester;
+
+    const transaction = await Transaction.createTransaction({
+      exchangeRequest: exchangeRequest._id,
+      payer: payer._id,
+      payee: payee._id,
+      amount: exchangeRequest.amount,
+      type: exchangeRequest.exchangeType,
+      platformFee: exchangeRequest.metadata.platformFee
+    }, session);
+
+    exchangeRequest.status = 'COMPLETED';
+    exchangeRequest.timeline.completedAt = new Date();
+    await exchangeRequest.save({ session });
+
+    const linkedRequest = await ExchangeRequest.findById(exchangeRequest.linkedRequest);
+    if (linkedRequest) {
+      linkedRequest.status = 'COMPLETED';
+      linkedRequest.timeline.completedAt = new Date();
+      await linkedRequest.save({ session });
+    }
+
+    payer.profile.completedExchanges += 1;
+    payee.profile.completedExchanges += 1;
+    await payer.save({ session });
+    await payee.save({ session });
+
+    await session.commitTransaction();
+
+    logger.info('Exchange completed successfully', {
+      requestId: exchangeRequest._id,
+      transactionId: transaction._id
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Exchange completed successfully',
+      data: {
+        exchangeRequest,
+        transaction
+      }
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    session.endSession();
   }
+});
+
+export const cancelExchangeRequest = asyncHandler(async (req, res) => {
+  const requestId = req.params.id;
+
+  const exchangeRequest = await ExchangeRequest.findById(requestId);
+
+  if (!exchangeRequest) {
+    throw new AppError('Exchange request not found', 404);
+  }
+
+  if (exchangeRequest.requester.toString() !== req.user._id.toString()) {
+    throw new AppError('Only the requester can cancel this request', 403);
+  }
+
+  if (exchangeRequest.status !== 'CREATED') {
+    throw new AppError('Only pending requests can be cancelled', 400);
+  }
+
+  exchangeRequest.status = 'CANCELLED';
+  exchangeRequest.timeline.cancelledAt = new Date();
+  await exchangeRequest.save();
+
+  logger.info('Exchange request cancelled', {
+    requestId: exchangeRequest._id,
+    userId: req.user._id
+  });
+
+  res.status(200).json({
+    success: true,
+    message: 'Request cancelled successfully',
+    data: { exchangeRequest }
+  });
+});
+
+export const getMyRequests = asyncHandler(async (req, res) => {
+  const { status, page = 1, limit = 20 } = req.query;
+  const skip = (page - 1) * limit;
+
+  const query = {
+    $or: [
+      { requester: req.user._id },
+      { helper: req.user._id }
+    ]
+  };
+
+  if (status) {
+    query.status = status;
+  }
+
+  const requests = await ExchangeRequest.find(query)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(parseInt(limit))
+    .populate('requester', 'name email profile')
+    .populate('helper', 'name email profile');
+
+  const total = await ExchangeRequest.countDocuments(query);
+
+  res.status(200).json({
+    success: true,
+    data: {
+      requests,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    }
+  });
+});
+
+export default {
+  createExchangeRequest,
+  getNearbyRequests,
+  discoverHelpers,
+  acceptExchangeRequest,
+  completeExchangeRequest,
+  cancelExchangeRequest,
+  getMyRequests
 };

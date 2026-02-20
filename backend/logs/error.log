@@ -1,0 +1,591 @@
+2026-02-15 17:09:44 [error]: Error connecting to MongoDB: connect ECONNREFUSED 127.0.0.1:27017
+MongooseServerSelectionError: connect ECONNREFUSED 127.0.0.1:27017
+    at _handleConnectionErrors (/home/pravin/Downloads/improved-backend/node_modules/mongoose/lib/connection.js:1169:11)
+    at NativeConnection.openUri (/home/pravin/Downloads/improved-backend/node_modules/mongoose/lib/connection.js:1100:11)
+    at async connectDB (file:///home/pravin/Downloads/improved-backend/config/db.js:7:18)
+    at async file:///home/pravin/Downloads/improved-backend/index.js:41:1
+{
+  "errorLabelSet": {},
+  "reason": {
+    "type": "Unknown",
+    "servers": {
+      "localhost:27017": {
+        "address": "localhost:27017",
+        "type": "Unknown",
+        "hosts": [],
+        "passives": [],
+        "arbiters": [],
+        "tags": {},
+        "minWireVersion": 0,
+        "maxWireVersion": 0,
+        "roundTripTime": -1,
+        "minRoundTripTime": 0,
+        "lastUpdateTime": 9319572,
+        "lastWriteDate": 0,
+        "error": {
+          "errorLabelSet": {},
+          "beforeHandshake": false
+        },
+        "topologyVersion": null,
+        "setName": null,
+        "setVersion": null,
+        "electionId": null,
+        "logicalSessionTimeoutMinutes": null,
+        "maxMessageSizeBytes": null,
+        "maxWriteBatchSize": null,
+        "maxBsonObjectSize": null,
+        "primary": null,
+        "me": null,
+        "$clusterTime": null,
+        "iscryptd": false
+      }
+    },
+    "stale": false,
+    "compatible": true,
+    "heartbeatFrequencyMS": 10000,
+    "localThresholdMS": 15,
+    "setName": null,
+    "maxElectionId": null,
+    "maxSetVersion": null,
+    "commonWireVersion": 0,
+    "logicalSessionTimeoutMinutes": null
+  },
+  "cause": {
+    "type": "Unknown",
+    "servers": {
+      "localhost:27017": {
+        "address": "localhost:27017",
+        "type": "Unknown",
+        "hosts": [],
+        "passives": [],
+        "arbiters": [],
+        "tags": {},
+        "minWireVersion": 0,
+        "maxWireVersion": 0,
+        "roundTripTime": -1,
+        "minRoundTripTime": 0,
+        "lastUpdateTime": 9319572,
+        "lastWriteDate": 0,
+        "error": {
+          "errorLabelSet": {},
+          "beforeHandshake": false
+        },
+        "topologyVersion": null,
+        "setName": null,
+        "setVersion": null,
+        "electionId": null,
+        "logicalSessionTimeoutMinutes": null,
+        "maxMessageSizeBytes": null,
+        "maxWriteBatchSize": null,
+        "maxBsonObjectSize": null,
+        "primary": null,
+        "me": null,
+        "$clusterTime": null,
+        "iscryptd": false
+      }
+    },
+    "stale": false,
+    "compatible": true,
+    "heartbeatFrequencyMS": 10000,
+    "localThresholdMS": 15,
+    "setName": null,
+    "maxElectionId": null,
+    "maxSetVersion": null,
+    "commonWireVersion": 0,
+    "logicalSessionTimeoutMinutes": null
+  }
+}
+2026-02-15 17:10:55 [error]: Error connecting to MongoDB: connect ECONNREFUSED 127.0.0.1:27017
+MongooseServerSelectionError: connect ECONNREFUSED 127.0.0.1:27017
+    at _handleConnectionErrors (/home/pravin/Downloads/improved-backend/node_modules/mongoose/lib/connection.js:1169:11)
+    at NativeConnection.openUri (/home/pravin/Downloads/improved-backend/node_modules/mongoose/lib/connection.js:1100:11)
+    at async connectDB (file:///home/pravin/Downloads/improved-backend/config/db.js:7:18)
+    at async file:///home/pravin/Downloads/improved-backend/index.js:41:1
+{
+  "errorLabelSet": {},
+  "reason": {
+    "type": "Unknown",
+    "servers": {
+      "localhost:27017": {
+        "address": "localhost:27017",
+        "type": "Unknown",
+        "hosts": [],
+        "passives": [],
+        "arbiters": [],
+        "tags": {},
+        "minWireVersion": 0,
+        "maxWireVersion": 0,
+        "roundTripTime": -1,
+        "minRoundTripTime": 0,
+        "lastUpdateTime": 9390410,
+        "lastWriteDate": 0,
+        "error": {
+          "errorLabelSet": {},
+          "beforeHandshake": false
+        },
+        "topologyVersion": null,
+        "setName": null,
+        "setVersion": null,
+        "electionId": null,
+        "logicalSessionTimeoutMinutes": null,
+        "maxMessageSizeBytes": null,
+        "maxWriteBatchSize": null,
+        "maxBsonObjectSize": null,
+        "primary": null,
+        "me": null,
+        "$clusterTime": null,
+        "iscryptd": false
+      }
+    },
+    "stale": false,
+    "compatible": true,
+    "heartbeatFrequencyMS": 10000,
+    "localThresholdMS": 15,
+    "setName": null,
+    "maxElectionId": null,
+    "maxSetVersion": null,
+    "commonWireVersion": 0,
+    "logicalSessionTimeoutMinutes": null
+  },
+  "cause": {
+    "type": "Unknown",
+    "servers": {
+      "localhost:27017": {
+        "address": "localhost:27017",
+        "type": "Unknown",
+        "hosts": [],
+        "passives": [],
+        "arbiters": [],
+        "tags": {},
+        "minWireVersion": 0,
+        "maxWireVersion": 0,
+        "roundTripTime": -1,
+        "minRoundTripTime": 0,
+        "lastUpdateTime": 9390410,
+        "lastWriteDate": 0,
+        "error": {
+          "errorLabelSet": {},
+          "beforeHandshake": false
+        },
+        "topologyVersion": null,
+        "setName": null,
+        "setVersion": null,
+        "electionId": null,
+        "logicalSessionTimeoutMinutes": null,
+        "maxMessageSizeBytes": null,
+        "maxWriteBatchSize": null,
+        "maxBsonObjectSize": null,
+        "primary": null,
+        "me": null,
+        "$clusterTime": null,
+        "iscryptd": false
+      }
+    },
+    "stale": false,
+    "compatible": true,
+    "heartbeatFrequencyMS": 10000,
+    "localThresholdMS": 15,
+    "setName": null,
+    "maxElectionId": null,
+    "maxSetVersion": null,
+    "commonWireVersion": 0,
+    "logicalSessionTimeoutMinutes": null
+  }
+}
+2026-02-15 17:12:45 [error]: Error connecting to MongoDB: connect ECONNREFUSED 127.0.0.1:27017
+MongooseServerSelectionError: connect ECONNREFUSED 127.0.0.1:27017
+    at _handleConnectionErrors (/home/pravin/Downloads/improved-backend/node_modules/mongoose/lib/connection.js:1169:11)
+    at NativeConnection.openUri (/home/pravin/Downloads/improved-backend/node_modules/mongoose/lib/connection.js:1100:11)
+    at async connectDB (file:///home/pravin/Downloads/improved-backend/config/db.js:7:18)
+    at async file:///home/pravin/Downloads/improved-backend/index.js:41:1
+{
+  "errorLabelSet": {},
+  "reason": {
+    "type": "Unknown",
+    "servers": {
+      "localhost:27017": {
+        "address": "localhost:27017",
+        "type": "Unknown",
+        "hosts": [],
+        "passives": [],
+        "arbiters": [],
+        "tags": {},
+        "minWireVersion": 0,
+        "maxWireVersion": 0,
+        "roundTripTime": -1,
+        "minRoundTripTime": 0,
+        "lastUpdateTime": 9500155,
+        "lastWriteDate": 0,
+        "error": {
+          "errorLabelSet": {},
+          "beforeHandshake": false
+        },
+        "topologyVersion": null,
+        "setName": null,
+        "setVersion": null,
+        "electionId": null,
+        "logicalSessionTimeoutMinutes": null,
+        "maxMessageSizeBytes": null,
+        "maxWriteBatchSize": null,
+        "maxBsonObjectSize": null,
+        "primary": null,
+        "me": null,
+        "$clusterTime": null,
+        "iscryptd": false
+      }
+    },
+    "stale": false,
+    "compatible": true,
+    "heartbeatFrequencyMS": 10000,
+    "localThresholdMS": 15,
+    "setName": null,
+    "maxElectionId": null,
+    "maxSetVersion": null,
+    "commonWireVersion": 0,
+    "logicalSessionTimeoutMinutes": null
+  },
+  "cause": {
+    "type": "Unknown",
+    "servers": {
+      "localhost:27017": {
+        "address": "localhost:27017",
+        "type": "Unknown",
+        "hosts": [],
+        "passives": [],
+        "arbiters": [],
+        "tags": {},
+        "minWireVersion": 0,
+        "maxWireVersion": 0,
+        "roundTripTime": -1,
+        "minRoundTripTime": 0,
+        "lastUpdateTime": 9500155,
+        "lastWriteDate": 0,
+        "error": {
+          "errorLabelSet": {},
+          "beforeHandshake": false
+        },
+        "topologyVersion": null,
+        "setName": null,
+        "setVersion": null,
+        "electionId": null,
+        "logicalSessionTimeoutMinutes": null,
+        "maxMessageSizeBytes": null,
+        "maxWriteBatchSize": null,
+        "maxBsonObjectSize": null,
+        "primary": null,
+        "me": null,
+        "$clusterTime": null,
+        "iscryptd": false
+      }
+    },
+    "stale": false,
+    "compatible": true,
+    "heartbeatFrequencyMS": 10000,
+    "localThresholdMS": 15,
+    "setName": null,
+    "maxElectionId": null,
+    "maxSetVersion": null,
+    "commonWireVersion": 0,
+    "logicalSessionTimeoutMinutes": null
+  }
+}
+2026-02-15 17:15:04 [error]: Error connecting to MongoDB: connect ECONNREFUSED 127.0.0.1:27017
+MongooseServerSelectionError: connect ECONNREFUSED 127.0.0.1:27017
+    at _handleConnectionErrors (/home/pravin/Downloads/improved-backend/node_modules/mongoose/lib/connection.js:1169:11)
+    at NativeConnection.openUri (/home/pravin/Downloads/improved-backend/node_modules/mongoose/lib/connection.js:1100:11)
+    at async connectDB (file:///home/pravin/Downloads/improved-backend/config/db.js:7:18)
+    at async file:///home/pravin/Downloads/improved-backend/index.js:41:1
+{
+  "errorLabelSet": {},
+  "reason": {
+    "type": "Unknown",
+    "servers": {
+      "localhost:27017": {
+        "address": "localhost:27017",
+        "type": "Unknown",
+        "hosts": [],
+        "passives": [],
+        "arbiters": [],
+        "tags": {},
+        "minWireVersion": 0,
+        "maxWireVersion": 0,
+        "roundTripTime": -1,
+        "minRoundTripTime": 0,
+        "lastUpdateTime": 9638779,
+        "lastWriteDate": 0,
+        "error": {
+          "errorLabelSet": {},
+          "beforeHandshake": false
+        },
+        "topologyVersion": null,
+        "setName": null,
+        "setVersion": null,
+        "electionId": null,
+        "logicalSessionTimeoutMinutes": null,
+        "maxMessageSizeBytes": null,
+        "maxWriteBatchSize": null,
+        "maxBsonObjectSize": null,
+        "primary": null,
+        "me": null,
+        "$clusterTime": null,
+        "iscryptd": false
+      }
+    },
+    "stale": false,
+    "compatible": true,
+    "heartbeatFrequencyMS": 10000,
+    "localThresholdMS": 15,
+    "setName": null,
+    "maxElectionId": null,
+    "maxSetVersion": null,
+    "commonWireVersion": 0,
+    "logicalSessionTimeoutMinutes": null
+  },
+  "cause": {
+    "type": "Unknown",
+    "servers": {
+      "localhost:27017": {
+        "address": "localhost:27017",
+        "type": "Unknown",
+        "hosts": [],
+        "passives": [],
+        "arbiters": [],
+        "tags": {},
+        "minWireVersion": 0,
+        "maxWireVersion": 0,
+        "roundTripTime": -1,
+        "minRoundTripTime": 0,
+        "lastUpdateTime": 9638779,
+        "lastWriteDate": 0,
+        "error": {
+          "errorLabelSet": {},
+          "beforeHandshake": false
+        },
+        "topologyVersion": null,
+        "setName": null,
+        "setVersion": null,
+        "electionId": null,
+        "logicalSessionTimeoutMinutes": null,
+        "maxMessageSizeBytes": null,
+        "maxWriteBatchSize": null,
+        "maxBsonObjectSize": null,
+        "primary": null,
+        "me": null,
+        "$clusterTime": null,
+        "iscryptd": false
+      }
+    },
+    "stale": false,
+    "compatible": true,
+    "heartbeatFrequencyMS": 10000,
+    "localThresholdMS": 15,
+    "setName": null,
+    "maxElectionId": null,
+    "maxSetVersion": null,
+    "commonWireVersion": 0,
+    "logicalSessionTimeoutMinutes": null
+  }
+}
+2026-02-15 17:20:10 [error]: Error occurred: Route not found: /favicon.ico
+Error: Route not found: /favicon.ico
+    at notFound (file:///home/pravin/Downloads/improved-backend/middleware/errorHandler.js:74:17)
+    at Layer.handle [as handle_request] (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:286:9
+    at router.process_params (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:280:10)
+    at file:///home/pravin/Downloads/improved-backend/index.js:79:5
+    at Layer.handle [as handle_request] (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:286:9
+{
+  "path": "/favicon.ico",
+  "method": "GET",
+  "ip": "::1"
+}
+2026-02-15 17:30:20 [error]: Uncaught Exception: EIO: i/o error, write
+Error: EIO: i/o error, write
+    at writeSync (node:fs:915:3)
+    at SyncWriteStream._write (node:internal/fs/sync_write_stream:27:5)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+    at _write (node:internal/streams/writable:499:10)
+    at Writable.write (node:internal/streams/writable:508:10)
+    at Console.log (/home/pravin/Downloads/improved-backend/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/pravin/Downloads/improved-backend/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/pravin/Downloads/improved-backend/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+    at writeOrBuffer (/home/pravin/Downloads/improved-backend/node_modules/readable-stream/lib/_stream_writable.js:381:5)
+    at Writable.write (/home/pravin/Downloads/improved-backend/node_modules/readable-stream/lib/_stream_writable.js:302:11)
+{
+  "errno": -5,
+  "syscall": "write",
+  "code": "EIO"
+}
+2026-02-19 20:35:52 [error]: Error occurred: Route not found: /
+Error: Route not found: /
+    at notFound (file:///home/pravin/Downloads/improved-backend/middleware/errorHandler.js:74:17)
+    at Layer.handle [as handle_request] (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:286:9
+    at router.process_params (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:280:10)
+    at file:///home/pravin/Downloads/improved-backend/index.js:79:5
+    at Layer.handle [as handle_request] (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:286:9
+{
+  "path": "/",
+  "method": "GET",
+  "ip": "::1"
+}
+2026-02-19 20:35:52 [error]: Error occurred: Route not found: /favicon.ico
+Error: Route not found: /favicon.ico
+    at notFound (file:///home/pravin/Downloads/improved-backend/middleware/errorHandler.js:74:17)
+    at Layer.handle [as handle_request] (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:286:9
+    at router.process_params (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:280:10)
+    at file:///home/pravin/Downloads/improved-backend/index.js:79:5
+    at Layer.handle [as handle_request] (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:286:9
+{
+  "path": "/favicon.ico",
+  "method": "GET",
+  "ip": "::1"
+}
+2026-02-19 20:44:34 [error]: Uncaught Exception: listen EADDRINUSE: address already in use :::5000
+Error: listen EADDRINUSE: address already in use :::5000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at file:///home/pravin/Downloads/improved-backend/index.js:204:8
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+{
+  "code": "EADDRINUSE",
+  "errno": -98,
+  "syscall": "listen",
+  "address": "::",
+  "port": 5000
+}
+2026-02-19 20:58:35 [error]: Error occurred: You already have an active exchange request
+Error: You already have an active exchange request
+    at file:///home/pravin/Downloads/improved-backend/controllers/exchangeController.js:29:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+{
+  "path": "/api/exchange",
+  "method": "POST",
+  "ip": "::1",
+  "userId": "69972911a2c74df0894cf5c3"
+}
+2026-02-19 20:59:38 [error]: Error occurred: Insufficient wallet balance
+Error: Insufficient wallet balance
+    at file:///home/pravin/Downloads/improved-backend/controllers/exchangeController.js:36:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+{
+  "path": "/api/exchange",
+  "method": "POST",
+  "ip": "::1",
+  "userId": "69972a4ca2c74df0894cf5d1"
+}
+2026-02-19 21:24:00 [error]: Error occurred: Route not found: /api/test/add-balance
+Error: Route not found: /api/test/add-balance
+    at notFound (file:///home/pravin/Downloads/improved-backend/middleware/errorHandler.js:74:17)
+    at Layer.handle [as handle_request] (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:286:9
+    at router.process_params (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:280:10)
+    at file:///home/pravin/Downloads/improved-backend/index.js:79:5
+    at Layer.handle [as handle_request] (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:286:9
+{
+  "path": "/api/test/add-balance",
+  "method": "POST",
+  "ip": "::1"
+}
+2026-02-19 21:24:58 [error]: Auth middleware error:
+{
+  "error": "Invalid or expired token"
+}
+2026-02-19 21:25:26 [error]: Error occurred: Route not found: /api/test/clear-all
+Error: Route not found: /api/test/clear-all
+    at notFound (file:///home/pravin/Downloads/improved-backend/middleware/errorHandler.js:74:17)
+    at Layer.handle [as handle_request] (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:286:9
+    at router.process_params (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:280:10)
+    at /home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:646:15
+    at next (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:265:14)
+    at router.handle (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:175:3)
+    at router (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:47:12)
+{
+  "path": "/api/test/clear-all",
+  "method": "DELETE",
+  "ip": "::1"
+}
+2026-02-19 21:41:37 [error]: Error occurred: Route not found: /api/exchange/accept/699734ff64f877b687723ac4
+Error: Route not found: /api/exchange/accept/699734ff64f877b687723ac4
+    at notFound (file:///home/pravin/Downloads/improved-backend/middleware/errorHandler.js:74:17)
+    at Layer.handle [as handle_request] (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:328:13)
+    at /home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:286:9
+    at router.process_params (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:280:10)
+    at /home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:646:15
+    at next (/home/pravin/Downloads/improved-backend/node_modules/express/lib/router/index.js:265:14)
+    at protect (file:///home/pravin/Downloads/improved-backend/middleware/authMiddleware.js:58:5)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+{
+  "path": "/api/exchange/accept/699734ff64f877b687723ac4",
+  "method": "POST",
+  "ip": "::1",
+  "userId": "699733d764f877b687723abe"
+}
+2026-02-19 21:47:48 [error]: Auth middleware error:
+{
+  "error": "Invalid or expired token"
+}
+2026-02-19 21:50:56 [error]: Error occurred: Insufficient wallet balance
+Error: Insufficient wallet balance
+    at userSchema.methods.debitWallet (file:///home/pravin/Downloads/improved-backend/models/User.js:137:11)
+    at transactionSchema.statics.createTransaction (file:///home/pravin/Downloads/improved-backend/models/Transaction.js:97:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///home/pravin/Downloads/improved-backend/controllers/exchangeController.js:262:25
+{
+  "path": "/api/exchange/6997386564f877b687723aee/complete",
+  "method": "POST",
+  "ip": "::1",
+  "userId": "6997386464f877b687723ae6"
+}
+2026-02-20 01:12:41 [error]: Uncaught Exception: EIO: i/o error, write
+Error: EIO: i/o error, write
+    at writeSync (node:fs:915:3)
+    at SyncWriteStream._write (node:internal/fs/sync_write_stream:27:5)
+    at writeOrBuffer (node:internal/streams/writable:570:12)
+    at _write (node:internal/streams/writable:499:10)
+    at Writable.write (node:internal/streams/writable:508:10)
+    at Console.log (/home/pravin/Downloads/improved-backend/node_modules/winston/lib/winston/transports/console.js:87:23)
+    at Console._write (/home/pravin/Downloads/improved-backend/node_modules/winston-transport/modern.js:103:17)
+    at doWrite (/home/pravin/Downloads/improved-backend/node_modules/readable-stream/lib/_stream_writable.js:390:139)
+    at writeOrBuffer (/home/pravin/Downloads/improved-backend/node_modules/readable-stream/lib/_stream_writable.js:381:5)
+    at Writable.write (/home/pravin/Downloads/improved-backend/node_modules/readable-stream/lib/_stream_writable.js:302:11)
+{
+  "errno": -5,
+  "syscall": "write",
+  "code": "EIO"
+}
+2026-02-20 20:22:14 [error]: Error occurred: Insufficient wallet balance
+Error: Insufficient wallet balance
+    at userSchema.methods.debitWallet (file:///home/pravin/cash-exchange/backend/models/User.js:137:11)
+    at transactionSchema.statics.createTransaction (file:///home/pravin/cash-exchange/backend/models/Transaction.js:97:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///home/pravin/cash-exchange/backend/controllers/exchangeController.js:262:25
+{
+  "path": "/api/exchange/6998751d5473d32850e378a5/complete",
+  "method": "POST",
+  "ip": "::1",
+  "userId": "6998751c5473d32850e3789d"
+}

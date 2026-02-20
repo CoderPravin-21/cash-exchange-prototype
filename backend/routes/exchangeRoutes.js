@@ -1,22 +1,39 @@
-import express from "express";
-const router = express.Router();
-
+import express from 'express';
 import {
   createExchangeRequest,
   getNearbyRequests,
+  discoverHelpers,
   acceptExchangeRequest,
   completeExchangeRequest,
   cancelExchangeRequest,
-  discoverHelpers,
-} from "../controllers/exchangeController.js";
+  getMyRequests
+} from '../controllers/exchangeController.js';
+import protect from '../middleware/authMiddleware.js';
+import {
+  validateExchangeRequest,
+  validateNearbyQuery,
+  validateObjectId,
+  validateCompletionCode
+} from '../middleware/validateRequest.js';
+import {
+  exchangeCreationLimiter,
+  acceptLimiter
+} from '../middleware/rateLimiter.js';
 
-import protect from "../middleware/authMiddleware.js";
+const router = express.Router();
 
-router.post("/", protect, createExchangeRequest);
-router.get("/nearby", protect, getNearbyRequests);
-router.post("/:id/accept", protect, acceptExchangeRequest);
-router.post("/:id/complete", protect, completeExchangeRequest);
-router.post("/:id/cancel", protect, cancelExchangeRequest);
-router.get("/helpers", protect, discoverHelpers);
+// All routes are protected
+router.use(protect);
+
+// Exchange request routes
+router.post('/', exchangeCreationLimiter, validateExchangeRequest, createExchangeRequest);
+router.get('/nearby', validateNearbyQuery, getNearbyRequests);
+router.get('/helpers', discoverHelpers);
+router.get('/my-requests', getMyRequests);
+
+// Single exchange request operations
+router.post('/:id/accept', validateObjectId('id'), acceptLimiter, acceptExchangeRequest);
+router.post('/:id/complete', validateObjectId('id'), validateCompletionCode, completeExchangeRequest);
+router.post('/:id/cancel', validateObjectId('id'), cancelExchangeRequest);
 
 export default router;
